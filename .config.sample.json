@@ -1,0 +1,5 @@
+{
+    "infura_project": "project_id from Infura",
+    "infura_key": "project_key from Infura",
+    "private_key": "Private key from wallet"
+}
