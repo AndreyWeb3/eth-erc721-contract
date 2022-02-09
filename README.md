@@ -3,8 +3,11 @@
 Test lower gas contract.
 
 In initial commit mine production contract that will be used as a base line for gas consumption. 
+
 Initial deploy consumed gas: 2,465,887. 
+
 Consumed gas by 1 NFT minting: 146,972
+
 Consumed gas by 5 NFT minting: 612,060
 
 ## Deploy stages
