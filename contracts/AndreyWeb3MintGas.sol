@@ -2,6 +2,7 @@
 pragma solidity 0.7.6;
 import "./Ownable.sol";
 import "./ERC721.sol";
+import "./Counters.sol";
 
 /**
  * @dev Contract module defining the ERC721 NFT Token.
@@ -10,6 +11,9 @@ import "./ERC721.sol";
  */
 contract AndreyWeb3MintGas is ERC721, Ownable {
     using Strings for uint256;
+    using Counters for Counters.Counter;
+
+    Counters.Counter private supply;
 
     string _baseTokenURI;
     uint256 public _cardPrice = 5000000000000000;   // .005 ETH
@@ -21,10 +25,16 @@ contract AndreyWeb3MintGas is ERC721, Ownable {
     constructor(string memory baseURI) ERC721("AndreyWeb3 Mint Gas Test", "AW3MG") {
         setBaseURI(baseURI);
     }
+
+    function totalSupply() public override view returns (uint256) {
+        return supply.current();
+    }
+
     function withdraw() public onlyOwner {
         uint balance = address(this).balance;
         msg.sender.transfer(balance);
     }
+
     /** 
      * Mint a number of cards straight in target wallet.
      * @param _to: The target wallet address, make sure it's the correct wallet.
@@ -32,14 +42,11 @@ contract AndreyWeb3MintGas is ERC721, Ownable {
      * @dev This function can only be called by the contract owner as it is a free mint.
      */
     function mintFreeCards(address _to, uint _numberOfTokens) public onlyOwner {
-        uint totalSupply = totalSupply();
+        uint currSupply = supply.current();
         require(_numberOfTokens <= _cardReserve, "Not enough cards left in reserve");
-        require(totalSupply >= _mainCardCnt);
-        require(totalSupply + _numberOfTokens <= _mainCardCnt + _cardReserve, "Purchase would exceed max supply of cards");
-        for(uint i = 0; i < _numberOfTokens; i++) {
-            uint mintIndex = totalSupply + i;
-            _safeMint(_to, mintIndex);
-        }
+        require(currSupply >= _mainCardCnt);
+        require(currSupply + _numberOfTokens <= _mainCardCnt + _cardReserve, "Purchase would exceed max supply of cards");
+        _mintLoop(_to, _numberOfTokens);
         _cardReserve -= _numberOfTokens;
     }
     /** 
@@ -47,14 +54,17 @@ contract AndreyWeb3MintGas is ERC721, Ownable {
      * @param _numberOfTokens: The number of tokens to mint.
      */
     function mintCard(uint _numberOfTokens) public payable {
-        uint totalSupply = totalSupply();
         require(_saleIsActive, "Sale must be active to mint a Card");
         require(_numberOfTokens < 6, "Can only mint 5 tokens at a time");
-        require(totalSupply + _numberOfTokens <= _mainCardCnt, "Purchase would exceed max supply of cards");
+        require(supply.current() + _numberOfTokens <= _mainCardCnt, "Purchase would exceed max supply of cards");
         require(msg.value >= _cardPrice * _numberOfTokens, "Ether value sent is not correct");
-        for(uint i = 0; i < _numberOfTokens; i++) {
-            uint mintIndex = totalSupply + i;
-            _safeMint(msg.sender, mintIndex);
+        _mintLoop(msg.sender, _numberOfTokens);
+    }
+
+    function _mintLoop(address _receiver, uint256 _numberOfTokens) internal {
+        for(uint256 i = 0; i < _numberOfTokens; i++) {
+            supply.increment();
+            _safeMint(_receiver, supply.current());
         }
     }
     function flipSaleState() public onlyOwner {
