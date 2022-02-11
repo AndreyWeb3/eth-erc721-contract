@@ -16,6 +16,14 @@ Consumed gas by 1 NFT minting: 208,970
 
 Consumed gas by 5 NFT minting: 618,582
 
+Actual lower gas contract from hashlips (0x1946625E2CA5a780D03F2F86a446cc3C67662BBe):
+
+Deploy: 2,190,879
+
+Consumed gas by 1 NFT minting: 65,573
+
+Consumed gas by 5 NFT minting: 167,849
+
 ## Deploy stages
 
 1. Install truffle globaly:
